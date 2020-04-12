@@ -11,6 +11,7 @@ class TicTacToe
         bool checkMarker(int x, int y, char currentPlayer);
         int getXCoord();
         int getYCoord();
+        bool checkVictory(char currentPlayer);
         void clearBoard();
         void printBoard();
         char board[3][3];
