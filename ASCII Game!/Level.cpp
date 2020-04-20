@@ -1,7 +1,7 @@
 #include "Level.h"
 #include <fstream>
 #include<cstdlib>
-
+#include <iostream>
 Level::Level()
 {
 
@@ -25,7 +25,7 @@ void Level::load(string fileName,Player &player)
     for(int i=0;i<_levelData.size();i++){
         for(int j=0;j<_levelData[i].size();j++){
             tile=_levelData[i][j];
-            switch (tile)
+            switch (tile) //scanning the levelData
             {
             case '#':
                 break;
@@ -34,9 +34,30 @@ void Level::load(string fileName,Player &player)
                 break;
             case '.':
                 break;
-            }
+            case 'S':
+                _enemies.push_back(Enemy("snake",'S',1,3,1,10,50));
+                _enemies.back().setPosition(j,i);
+                break;
+            case 'g':
+                _enemies.push_back(Enemy("goblin",'g',2,10,5,55,50));
+                _enemies.back().setPosition(j,i);
+                break;
+            case 'O':
+                _enemies.push_back(Enemy("ogre",'O',4,20,20,200,500));
+                _enemies.back().setPosition(j,i);
+                break;
+            case 'B':
+                _enemies.push_back(Enemy("bandit",'B',1,3,1,10,250));
+                _enemies.back().setPosition(j,i);
+                break;
+            case 'D':
+                _enemies.push_back(Enemy("Dragon!!",'B',34,5,234,4667,50000));
+                _enemies.back().setPosition(j,i);
+                break;
+                }
         }
-    }}
+    }
+    }
 void Level::print()
 {
     cout<<string(100,'\n');
@@ -100,5 +121,126 @@ void Level::processPlayerMove(Player &player,int targetX,int targetY)
         setTile(playerx,playery,'.');
         setTile(targetX,targetY,'@');
         break;
+    case '#':
+        break;
+    default:
+        battleMonster(player,targetX,targetY);
         }
+}
+void Level::battleMonster(Player &player,int targetX,int targetY)
+{
+    int enemyX;
+    int enemyY;
+    int attackRoll;
+    int attackResult;
+    int playerX;
+    int playerY;
+    player.getPosition(playerX,playerY);
+    for(int i=0;i<_enemies.size();i++){
+            _enemies[i].getPosition(enemyX,enemyY);
+
+        if(targetX==enemyX&&targetY==enemyY){
+            //battle
+            attackRoll=player.attack();
+            attackResult=_enemies[i].takeDamage(attackRoll);
+            printf("%s attacked monster with a damage of %d","Player",attackRoll);
+            string enemyName;
+            enemyName=_enemies[i].getName();
+            if(attackResult!=0){
+                setTile(targetX,targetY,'.');
+                print();
+                cout<<"Monster Died! \n";
+                _enemies[i]=_enemies.back();
+                _enemies.pop_back();
+                i--;   //process
+                system("PAUSE");
+                player.addExperience(attackResult);
+                return;
+            }
+            //Monster's turn!
+                cout<<"It's the monster's turn\n";
+                //system("PAUSE");
+                attackRoll=_enemies[i].attack(); // Problem is here.
+                attackResult=player.takeDamage(attackRoll);
+                printf("%s attacked player with a damage of %d",enemyName.c_str(),attackRoll);
+            if(attackResult!=0){
+                setTile(playerX,playerY,'X'); //doubt here
+                print();
+                cout<<"You died\n";
+                system("PAUSE");
+                exit(0);
+             }
+             system("PAUSE");
+             return; //battle se bahar aa gye.
+            }
+
+            //battle
+
+        }
+    }
+
+void Level::updateMonsters(Player &player)
+{
+char aiMove;
+int playerX;
+int playerY;
+int enemyX;
+int enemyY;
+
+
+player.getPosition(playerX,playerY);
+
+    for(int i=0;i<_enemies.size();i++){
+        aiMove=_enemies[i].getMove()
+        _enemies[i].getPosition(enemyX,enemyY);
+        switch(aiMove){
+    case 'w':
+
+        processMonsterMove(player,PlayerX,PlayerY-1);
+        break;
+
+    case's':
+        processMonsterMove(player,PlayerX,PlayerY+1);
+
+        break;
+
+    case'a':
+        processMonsterMove(player,PlayerX-1,PlayerY);
+
+        break;
+
+    case'd':
+        processMonsterMove(player,PlayerX+1,PlayerY);
+
+        break;
+        }
+    }
+}
+
+void Level::processMonsterMove(Player &player,int enemyIndex,int targetX,int targetY)
+{
+    int playerY;
+    int playerX;
+    int enemyX;
+    int enemyY;
+    _enemies[enemyIndex].getPosition(enemyX,enemyY);
+    player.getPosition(playerX,playerY);
+    char moveTile=getTile(targetX,targetY);
+    switch(moveTile){
+
+    case '.':
+        _enemies[enemyIndex].setPosition(targetX,targetY);
+
+        setTile(enemyX,enemyY,'.');
+        setTile(targetX,targetY,_enemies[enemyIndex].getTile());
+        break;
+    case '#':
+        break;
+    case '@':
+        battleMonster(player,enemyX,enemyY);
+        break;
+    default:
+        break;
+        }
+
 }

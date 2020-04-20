@@ -18,15 +18,16 @@ void GameSystem::playGame()
     {
         _level.print();
         PlayerMove();
-        printf("Enter a move commmand w s a d \n");
+        _level.updateMonsters(_enemies);
+
 
     }
 }
 
 void GameSystem::PlayerMove()
 {
-    char input;
-    input = _getch();
+    printf("Enter a move commmand w s a d \n");
+     wchar_t input = _getch();
     _level.movePlayer(input,_player);
 
 }
